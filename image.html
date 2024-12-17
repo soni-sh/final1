@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Swiper demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1" />
+  <!-- Link Swiper's CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+  <!-- Demo styles -->
+<style>
+  * {
+  margin: 0;
+  box-sizing: border-box;
+}
+
+body {
+  height: 100vh;
+  background-color: #101010;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  font-family: Arial;
+  color: White;
+  font-size: min(3.75vw, 25px);
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+/* Esconde el contenido hasta que se ejecute el JS */
+slider > content {
+  display: none;
+}
+
+/* Contenedor general */
+slider {
+  background-color: #9e9e9e;
+  width: 90%; /* Set width as a percentage */
+  max-width: 500px; /* Limit the maximum width */
+  aspect-ratio: 2/2;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  
+}
+
+/* Contenedor de contenido */
+slider .contents {
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+  position: relative;
+  background-size: cover;
+  transition: all 0.5s ease;
+}
+
+slider content {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  display: block;
+  background-size: cover;
+  object-fit: cover;
+  transform: translate(100%, 0);
+}
+
+slider content:nth-of-type(1) {
+  transform: translate(0%, 0);
+}
+
+/* Flechas */
+slider .ArrowLeft,
+slider .ArrowRight {
+  position: absolute;
+  height: 100%;
+  width: 2em;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+slider .ArrowLeft {
+  left: 0;
+}
+
+slider .ArrowRight {
+  right: 0;
+}
+
+/* Selectores */
+slider .Selectores {
+  padding: 15px;
+  position: absolute;
+  bottom: -1.5em;
+  gap: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+slider .Selectores > div {
+  background-color: #FFF;
+  height: 10px;
+  width: 10px;
+  display: block;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+slider .Selectores > div.Activo {
+  background-color: #999999;
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+  body {
+    font-size: min(5vw, 20px);
+  }
+
+  slider {
+    width: 90%;
+    max-width: 400px;
+  }
+
+  slider .ArrowLeft, slider .ArrowRight {
+    width: 2.5em; /* Make arrows slightly larger */
+  }
+
+  slider .Selectores {
+    bottom: -1em; /* Adjust selectors position */
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: min(6vw, 18px);
+  }
+
+  slider {
+    width: 95%; /* Even more flexible on smaller screens */
+    max-width: 350px;
+  }
+
+  slider .ArrowLeft, slider .ArrowRight {
+    width: 3em; /* Make arrows larger on very small screens */
+  }
+}
+
+</style>
+  
+</head>
+
+<body>
+  <slider arrows="true" selec="true" autoplay="4">
+    <content style="background-image: url(img/new-images/Untitled\ design\ \(32\).png);"></content>
+    <content style="background-image: url(img/new-images/Untitled\ design\ \(33\).png);"></content>
+    <content style="background-image: url(img/new-images/Untitled\ design\ \(34\).png);"></content>
+  </slider>
+  <script>
+    let slider = document.getElementsByTagName("slider");
+for (let i = 0; i < slider.length; i++) {
+  // Guardar contenidos
+  let contents = slider[i].innerHTML;
+  // Numerar contenidos
+  let NumContent=slider[i].getElementsByTagName("content").length;
+  // Lista de intervalos
+  let ListInter = [];
+  // Crear elementos
+  slider[i].innerHTML = '<div class="contents" active="0">'+contents+'</div>';
+
+  // Añadir flechas
+  if (slider[i].getAttribute("arrows") == "true"){
+    slider[i].innerHTML += '<div class="ArrowLeft" onclick="SliderLeft(this)"><p>❮</p></div>';
+    slider[i].innerHTML += '<div class="ArrowRight" onclick="SliderRight(this)"><p>❯</p></div>';
+  }
+  // Añadir selectores
+    if (slider[i].getAttribute("selec") == "true"){
+    let selectores = "";
+    for (let x = 0; x < NumContent; x++) {
+      selectores += '<div onclick="SliderPosition(this, '+x+')" class></div>';
+    }
+    slider[i].innerHTML += '<div class="Selectores">'+selectores+'</div>';
+    slider[i].querySelector("div.Selectores > div:nth-child(1)").className = "Activo";
+  }
+  // Añadir repuccion automatica
+  let autoplayTime = parseInt(slider[i].getAttribute('autoplay'));
+  if (autoplayTime > 0){
+    // Crear intervalo inicial
+    ListInter[i] = setInterval(function() {Next(i)}, autoplayTime*1000);
+    // Evento sacar raton en el slider
+    slider[i].onmouseleave = function() {
+      ListInter[i] = setInterval(function() {Next(i)}, autoplayTime*1000);
+    }
+    // Evento meter raton en el slider
+    slider[i].onmouseenter = function() {clearInterval(ListInter[i]);};
+  }
+}
+
+
+
+
+
+// Anterior
+function SliderLeft(Elements){
+  // Guardar variables
+  let Num = parseInt(Elements.parentNode.querySelector("div.contents").getAttribute("active"));
+  let MaxNum = Elements.parentNode.getElementsByTagName("content").length-1;
+  let Element = Elements.parentNode.getElementsByTagName("content");
+
+  // Cambiar activo
+  if(Num==0){Elements.parentNode.querySelector("div.contents").setAttribute('active', MaxNum);}
+  else {Elements.parentNode.querySelector("div.contents").setAttribute('active', Num-1);}
+
+
+  // Desplazar actual
+  Element[Num].animate([
+    {transform: 'translate(0%, 0)'}, {transform: 'translate(100%, 0)'}
+  ], {duration: 250});
+  Element[Num].style.transform="translateX(100%)";
+
+  if(Num==0){
+    // Cambiar la clase de selector
+    if(Elements.parentNode.querySelector("div.Selectores > div")){
+      Elements.parentNode.getElementsByClassName("Activo")[0].className = "";
+      Elements.parentNode.querySelector("div.Selectores").getElementsByTagName("div")[MaxNum].className = "Activo";
+    }
+    // Pasar a ultimo
+    Element[MaxNum].animate([
+      {transform: 'translate(-100%, 0)'}, {transform: 'translate(0%, 0)'}
+    ], {duration: 250});
+    Element[MaxNum].style.transform="translateX(0%)";
+
+  } else {
+    // Cambiar la clase de selector
+    if(Elements.parentNode.querySelector("div.Selectores > div")){
+      Elements.parentNode.getElementsByClassName("Activo")[0].className = "";
+      Elements.parentNode.querySelector("div.Selectores").getElementsByTagName("div")[Num-1].className = "Activo";
+    }
+    // Pasar a anterior
+    Element[Num-1].animate([
+      {transform: 'translate(-100%, 0)'}, {transform: 'translate(0%, 0)'}
+    ], {duration: 250});
+    Element[Num-1].style.transform="translateX(0%)";
+  }
+}
+
+
+// Siguiente
+function SliderRight(Elements){
+  // Guardar variables
+  let Num = parseInt(Elements.parentNode.querySelector("div.contents").getAttribute("active"));
+  let MaxNum = Elements.parentNode.getElementsByTagName("content").length-1;
+  let Element = Elements.parentNode.getElementsByTagName("content");
+
+  // Cambiar activo
+  if(Num==MaxNum){Elements.parentNode.querySelector("div.contents").setAttribute('active', 0);}
+  else {Elements.parentNode.querySelector("div.contents").setAttribute('active', Num+1);}
+
+
+  // Desplazar actual
+  Element[Num].animate([
+    {transform: ' translate(0%, 0)'}, {transform: 'translate(-100%, 0)'}
+  ], {duration: 250});
+  Element[Num].style.transform="translateX(-100%)";
+
+  // Nuevo
+  if(Num==MaxNum){
+    // Cambiar la clase de selector
+    if(Elements.parentNode.querySelector("div.Selectores > div")){
+      Elements.parentNode.getElementsByClassName("Activo")[0].className = "";
+      Elements.parentNode.querySelector("div.Selectores").getElementsByTagName("div")[0].className = "Activo";
+    }
+    // Pasar a primero
+    Element[0].animate([
+      {transform: 'translate(100%, 0)'}, {transform: 'translate(0%, 0)'}
+    ], {duration: 250});
+    Element[0].style.transform="translateX(0%)";
+  } else {
+    // Cambiar la clase de selector
+    if(Elements.parentNode.querySelector("div.Selectores > div")){
+      Elements.parentNode.getElementsByClassName("Activo")[0].className = "";
+      Elements.parentNode.querySelector("div.Selectores").getElementsByTagName("div")[Num+1].className = "Activo";
+    }
+    // Pasar a anterior
+    Element[Num+1].animate([
+      {transform: 'translate(100%, 0)'}, {transform: 'translate(0%, 0)'}
+    ], {duration: 250});
+    Element[Num+1].style.transform="translateX(0%)";
+  }
+}
+
+
+// Selector
+function SliderPosition(Element, NewNum){
+  // Guardar variables
+  let Num=Element.parentNode.parentNode.querySelector("div.contents").getAttribute("active");
+
+  // Cambiar activo
+  Element.parentNode.parentNode.querySelector("div.contents").setAttribute('active', NewNum);
+
+  // Quitar clase  y añadir nueva
+  Element.parentNode.parentNode.getElementsByClassName("Activo")[0].className = "";
+  Element.className = "Activo";
+
+  // Guardar variable de ruta
+  Element = Element.parentNode.parentNode.getElementsByTagName("content");
+
+  if(Num>NewNum){
+    // Sacar actual
+    Element[Num].animate([
+      {transform: ' translate(0%, 0)'}, {transform: 'translate(100%, 0)'}
+    ], {duration: 250});
+    Element[Num].style.transform="translateX(100%)";
+    // Meter anterior
+    Element[NewNum].animate([
+      {transform: 'translate(-100%, 0)'}, {transform: 'translate(0%, 0)'}
+    ], {duration: 250});
+    Element[NewNum].style.transform="translateX(0%)";
+  }
+  else if (Num<NewNum){
+    // Sacar actual
+    Element[Num].animate([
+      {transform: ' translate(0%, 0)'}, {transform: 'translate(-100%, 0)'}
+    ], {duration: 250});
+    Element[Num].style.transform="translateX(-100%)";
+    // Meter siguiente
+    Element[NewNum].animate([
+      {transform: 'translate(100%, 0)'}, {transform: 'translate(0%, 0)'}
+    ], {duration: 250});
+    Element[NewNum].style.transform="translateX(0%)";
+  }
+}
+
+
+// Autoplay
+function Next(Position){
+  // Guardar variables
+  let Elements = document.getElementsByTagName("slider")[Position];
+  let Num = parseInt(Elements.querySelector("div.contents").getAttribute("active"));
+  let MaxNum = Elements.getElementsByTagName("content").length-1;
+  let Element = Elements.getElementsByTagName("content");
+
+  // Cambiar activo
+  if(Num==MaxNum){Elements.querySelector("div.contents").setAttribute('active', 0);}
+  else {Elements.querySelector("div.contents").setAttribute('active', Num+1);}
+
+  // Desplazar actual
+  Element[Num].animate([
+    {transform: ' translate(0%, 0)'}, {transform: 'translate(-100%, 0)'}
+  ], {duration: 250});
+  Element[Num].style.transform="translateX(-100%)";
+
+  // Nuevo
+  if(Num==MaxNum){
+    // Cambiar la clase de selector
+    if(Elements.parentNode.querySelector("div.Selectores > div")){
+      Elements.parentNode.getElementsByClassName("Activo")[0].className = "";
+      Elements.parentNode.querySelector("div.Selectores").getElementsByTagName("div")[0].className = "Activo";
+    }
+    // Pasar a primero
+    Element[0].animate([
+      {transform: 'translate(100%, 0)'}, {transform: 'translate(0%, 0)'}
+    ], {duration: 250});
+    Element[0].style.transform="translateX(0%)";
+  } else {
+    // Cambiar la clase de selector
+    if(Elements.parentNode.querySelector("div.Selectores > div")){
+      Elements.parentNode.getElementsByClassName("Activo")[0].className = "";
+      Elements.parentNode.querySelector("div.Selectores").getElementsByTagName("div")[Num+1].className = "Activo";
+    }
+    // Pasar a anterior
+    Element[Num+1].animate([
+      {transform: 'translate(100%, 0)'}, {transform: 'translate(0%, 0)'}
+    ], {duration: 250});
+    Element[Num+1].style.transform="translateX(0%)";
+  }
+}
+  </script>
+</body>
+
+</html>
